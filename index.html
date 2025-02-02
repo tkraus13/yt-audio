@@ -33,6 +33,10 @@
         }
 
         function extractVideoId(url) {
+            if (url.includes("m.youtube.com")) {
+                url = url.replace("m.youtube.com", "www.youtube.com");
+            }
+            
             const match = url.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
             return match ? match[1] : '';
         }
