@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Audio Timer</title>
+    <script>
+        let player;
+        let timer;
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '0',
+                width: '0',
+                videoId: '', // Video ID will be set dynamically
+                playerVars: { 'autoplay': 1, 'controls': 0 },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            document.getElementById("playButton").disabled = false;
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.CUED || event.data === YT.PlayerState.PLAYING) {
+                const duration = player.getDuration();
+                document.getElementById("videoLength").innerText = `Video Length: ${Math.floor(duration / 60)}m ${duration % 60}s`;
+            }
+        }
+
+        function extractVideoId(url) {
+            const match = url.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+            return match ? match[1] : '';
+        }
+
+        function playAudio() {
+            const videoUrl = document.getElementById("videoUrl").value;
+            const videoId = extractVideoId(videoUrl);
+            const startTime = parseInt(document.getElementById("startTime").value, 10) * 60;
+            const duration = parseInt(document.getElementById("duration").value, 10) * 60000;
+            
+            if (videoId) {
+                player.loadVideoById({videoId: videoId, startSeconds: startTime});
+                player.playVideo();
+            }
+            
+            if (duration > 0) {
+                clearTimeout(timer);
+                timer = setTimeout(() => player.stopVideo(), duration);
+            }
+        }
+    </script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+</head>
+<body>
+    <h1>YouTube Audio Timer</h1>
+    <label for="videoUrl">YouTube Video URL:</label>
+    <input type="text" id="videoUrl" placeholder="Enter YouTube URL">
+    <br>
+    <label for="startTime">Start Time (minutes):</label>
+    <input type="number" id="startTime" placeholder="Enter start minute">
+    <br>
+    <label for="duration">Duration (minutes):</label>
+    <input type="number" id="duration" placeholder="Enter minutes">
+    <br>
+    <button id="playButton" onclick="playAudio()" disabled>Play Audio</button>
+    <div id="player"></div>
+    <p id="videoLength">Video Length: Not loaded</p>
+</body>
+</html>
